@@ -1,30 +1,38 @@
 import { useState } from 'react';
 import axios from 'axios';
-import './App.css';
 
 function App() {
-  const registrarMovimiento = async () => {
+  // Estado para capturar los datos del formulario
+  const [formData, setFormData] = useState({
+    codigo_barras: '',
+    id_proceso: '',
+    cantidad: '',
+    tipo_movimiento: 'entrada'
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      // Petición asincrónica al endpoint definido en tu actividad [cite: 24, 55]
-      const response = await axios.post('http://localhost:3001/api/v1/inventario/movimiento', {
-        codigo_barras: "7701234567890",
-        id_proceso: 3,
-        cantidad: 50,
-        tipo_movimiento: "ENTRADA"
-      });
-      alert(response.data.mensaje); // Confirmación de registro 
+      // Enviamos los datos al backend (puerto 3001)
+      const res = await axios.post('http://localhost:3001/api/v1/inventario/movimiento', formData);
+      alert('¡Éxito! ' + res.data.mensaje);
+      
+      // Limpiamos el formulario
+      setFormData({ codigo_barras: '', id_proceso: '', cantidad: '', tipo_movimiento: 'entrada' });
     } catch (error) {
-      console.error("Error al registrar:", error);
-      alert("Error al conectar con el servidor");
+      alert('Error al registrar: ' + (error.response?.data?.error || error.message));
     }
   };
 
   return (
-    <div className="App" style={{ padding: '20px', textAlign: 'center' }}>
-      <h1>Control de Inventario - Planta</h1>
-      <button onClick={registrarMovimiento} style={{ padding: '15px 30px', fontSize: '16px' }}>
-        Registrar Entrada (Pasatapas)
-      </button>
+    <div className="p-5">
+      <h1>Control de Inventario</h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <input placeholder="Código de Barras" value={formData.codigo_barras} onChange={(e) => setFormData({...formData, codigo_barras: e.target.value})} className="border p-2" />
+        <input placeholder="ID Proceso" value={formData.id_proceso} onChange={(e) => setFormData({...formData, id_proceso: e.target.value})} className="border p-2" />
+        <input placeholder="Cantidad" value={formData.cantidad} onChange={(e) => setFormData({...formData, cantidad: e.target.value})} className="border p-2" />
+        <button type="submit" className="bg-blue-500 text-white p-2">Registrar Movimiento</button>
+      </form>
     </div>
   );
 }
